@@ -1,0 +1,5 @@
+omni-tls:
+  certificate:
+    info-level-days: 150
+    warning-level-days: 70
+    error-level-days: 2

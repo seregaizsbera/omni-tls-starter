@@ -1,0 +1,89 @@
+plugins {
+    id "java"
+    id "maven-publish"
+}
+
+group = "ru.github.seregaizsbera"
+version = "1.0.0"
+
+repositories {
+    mavenCentral()
+}
+
+var versions = [
+        "ch.qos.logback": [
+                "logback-classic": property("logback.version"),
+                "logback-core": property("logback.version")
+        ],
+        "org.junit.jupiter": ["junit-jupiter-api": property("junit-jupiter.version")],
+        "org.springframework.boot": [
+                "spring-boot-starter": property("spring-boot.version"),
+                "spring-boot-starter-test": property("spring-boot.version")
+        ]
+] as Map<String, Map<String, String>>
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency {
+        var target = versions.getOrDefault(requested.group, [:]).getOrDefault(requested.name, requested.version)
+        if (target != requested.version) {
+            useVersion(target)
+        }
+    }
+}
+
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+    withJavadocJar()
+}
+
+var scc = project.components
+
+publishing {
+    publications {
+        create("omni-tls-starter", MavenPublication) {
+            from(scc.named("java").get())
+            versionMapping {
+                allVariants(VariantVersionMappingStrategy::fromResolutionResult)
+            }
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+
+compileTestJava {
+    options.compilerArgs += ["--add-exports", "java.base/sun.security.jca=ALL-UNNAMED"]
+    options.compilerArgs += ["--add-exports", "java.base/sun.security.x509=ALL-UNNAMED"]
+}
+
+test {
+    jvmArgs += ["--add-exports", "java.base/sun.security.jca=ALL-UNNAMED"]
+    jvmArgs += ["--add-exports", "java.base/sun.security.util=ALL-UNNAMED"]
+    jvmArgs += ["--add-exports", "java.base/sun.security.x509=ALL-UNNAMED"]
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.deprecation = true
+    options.warnings = true
+    options.compilerArgs << "-Xlint:all"
+}
+
+tasks.withType(Javadoc).configureEach {
+    options { StandardJavadocDocletOptions o ->
+        o.encoding = "UTF-8"
+        o.docEncoding = "UTF-8"
+        o.addBooleanOption("Xdoclint:none", true)
+        o.jFlags("-Dfile.encoding=UTF-8")
+        o.memberLevel = JavadocMemberLevel.PRIVATE
+    }
+}

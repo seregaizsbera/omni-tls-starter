@@ -1,0 +1,2 @@
+org.springframework.context.ApplicationListener=ru.github.seregaizsbera.tls.starter.OmniTLSApplicationListener
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=ru.github.seregaizsbera.tls.starter.configuration.OmniTlsStarterConfiguration
