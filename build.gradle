@@ -16,6 +16,11 @@ var versions = [
                 "logback-core": property("logback.version")
         ],
         "org.junit.jupiter": ["junit-jupiter-api": property("junit-jupiter.version")],
+        "org.yaml": ["snakeyaml": property("snakeyaml.version")],
+        "org.springframework": [
+                "spring-context": property("spring-framework.version"),
+                "spring-test": property("spring-framework.version")
+        ],
         "org.springframework.boot": [
                 "spring-boot-starter": property("spring-boot.version"),
                 "spring-boot-starter-test": property("spring-boot.version")
@@ -35,6 +40,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {
@@ -66,9 +72,11 @@ compileTestJava {
 }
 
 test {
+    useJUnitPlatform()
     jvmArgs += ["--add-exports", "java.base/sun.security.jca=ALL-UNNAMED"]
     jvmArgs += ["--add-exports", "java.base/sun.security.util=ALL-UNNAMED"]
     jvmArgs += ["--add-exports", "java.base/sun.security.x509=ALL-UNNAMED"]
+    systemProperty("org.springframework.boot.logging.LoggingSystem", "none")
 }
 
 tasks.withType(JavaCompile).configureEach {
