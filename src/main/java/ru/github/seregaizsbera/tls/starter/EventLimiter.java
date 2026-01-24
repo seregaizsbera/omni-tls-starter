@@ -17,7 +17,7 @@ class EventLimiter {
     private final Map<String, Map<String, Long>> index1; // key1 -> key2 -> timestamp
     private final SortedMap<Long, Map<String, Set<String>>> index2; // timestamp -> key1 -> key2
     private final long limitPeriodMs;
-    private long lastTime = Long.MIN_VALUE;
+    private long lastTime;
 
     /**
      * Конструктор
@@ -28,6 +28,7 @@ class EventLimiter {
         this.limitPeriodMs = limitPeriodMs;
         this.index1 = new HashMap<>();
         this.index2 = new TreeMap<>();
+        this.lastTime = Long.MIN_VALUE;
     }
 
     /**

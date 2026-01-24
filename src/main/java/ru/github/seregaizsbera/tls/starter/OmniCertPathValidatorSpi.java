@@ -17,7 +17,7 @@ import java.security.cert.X509Certificate;
 import java.util.Objects;
 
 /**
- * Реализация менеджера ключей в провайдере безопасности {@value OmniSecurityProvider#NAME}. Делегирует вызовы методов
+ * Реализация валидатора цепочки сертификатов в провайдере безопасности {@value OmniSecurityProvider#NAME}. Делегирует вызовы методов
  * провайдеру безопасности {@value #INTERNAL_PROVIDER}, используя при этом алгоритм {@linkplain #ALGORITHM}.
  */
 public class OmniCertPathValidatorSpi extends CertPathValidatorSpi {
@@ -60,8 +60,10 @@ public class OmniCertPathValidatorSpi extends CertPathValidatorSpi {
                 }
             }
             return result;
+        } catch (CertPathValidatorException e) {
+            throw e;
         } catch (GeneralSecurityException e) {
-            var exception = new CertPathValidatorException(e);
+            var exception = new CertPathValidatorException(e.getMessage(), e.getCause(), certPath, -1, CertPathValidatorException.BasicReason.UNSPECIFIED);
             exception.setStackTrace(e.getStackTrace());
             throw exception;
         }

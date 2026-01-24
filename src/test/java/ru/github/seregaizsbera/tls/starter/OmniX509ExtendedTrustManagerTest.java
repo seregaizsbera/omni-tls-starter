@@ -22,7 +22,6 @@ import java.security.Provider;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Objects;
 import java.util.Set;
 
@@ -34,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(MockitoExtension.class)
 class OmniX509ExtendedTrustManagerTest {
     private static final String AUTH_TYPE = "RSA";
-    private static final X509Certificate[] CHAIN = new X509Certificate[1];
+    private X509Certificate[] chain;
     private static OmniX509ExtendedTrustManager omniX509ExtendedTrustManager;
     private static OmniTrustManagerFactorySpi omniTrustManagerFactorySpi;
     private static TrustManager[] trustManagers;
@@ -42,11 +41,10 @@ class OmniX509ExtendedTrustManagerTest {
     @Mock
     private OmniSecurityNotifier notifier;
     @Spy
-    private OmniTlsStarterSettings settings = new OmniTlsStarterSettings();
+    private OmniTlsStarterSettings settings = OmniTlsStarterSettings.getInstance();
 
     @BeforeEach
-    public void setUp() throws GeneralSecurityException, IOException {
-        X509Certificate x509Certificate = null;
+    void setUp() throws GeneralSecurityException, IOException {
         ClassLoader classLoader = OmniX509ExtendedTrustManagerTest.class.getClassLoader();
         keyStore = KeyStore.getInstance("JKS");
         try (InputStream keyStoreData = classLoader
@@ -54,13 +52,9 @@ class OmniX509ExtendedTrustManagerTest {
             char[] keyStorePassword = "1111".toCharArray();
             keyStore.load(keyStoreData, keyStorePassword);
         }
-
-        Enumeration<String> enumeration = keyStore.aliases();
-        while (enumeration.hasMoreElements()) {
-            String alias = enumeration.nextElement();
-            x509Certificate = (X509Certificate) keyStore.getCertificate(alias);
-        }
-        CHAIN[0] = x509Certificate;
+        chain = Arrays.stream(keyStore.getCertificateChain("1"))
+                .map(X509Certificate.class::cast)
+                .toArray(X509Certificate[]::new);
     }
 
     @AfterEach
@@ -85,13 +79,13 @@ class OmniX509ExtendedTrustManagerTest {
         trustManagers = omniTrustManagerFactorySpi.engineGetTrustManagers();
         omniX509ExtendedTrustManager = (OmniX509ExtendedTrustManager) trustManagers[0];
         assertDoesNotThrow(() ->
-                omniX509ExtendedTrustManager.checkServerTrusted(CHAIN, AUTH_TYPE));
+                omniX509ExtendedTrustManager.checkServerTrusted(chain, AUTH_TYPE));
         Exception exception = assertThrows(IllegalArgumentException.class, () -> omniX509ExtendedTrustManager.checkServerTrusted(null, AUTH_TYPE));
         String expectedMessage = "null or zero-length certificate chain";
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
         expectedMessage = "null or zero-length authentication type";
-        exception = assertThrows(IllegalArgumentException.class, () -> omniX509ExtendedTrustManager.checkServerTrusted(CHAIN, null));
+        exception = assertThrows(IllegalArgumentException.class, () -> omniX509ExtendedTrustManager.checkServerTrusted(chain, null));
         actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(expectedMessage));
     }
@@ -133,5 +127,14 @@ class OmniX509ExtendedTrustManagerTest {
                     var newTm = OmniX509ExtendedTrustManager.wrap(tm, notifier, settings);
                     assertInstanceOf(OmniX509ExtendedTrustManager.class, newTm);
                 });
+    }
+
+    @Test
+    void expired() throws KeyStoreException {
+        omniTrustManagerFactorySpi = new OmniTrustManagerFactorySpi();
+        omniTrustManagerFactorySpi.engineInit(keyStore);
+        trustManagers = omniTrustManagerFactorySpi.engineGetTrustManagers();
+        omniX509ExtendedTrustManager = (OmniX509ExtendedTrustManager) trustManagers[0];
+        assertDoesNotThrow(() -> omniX509ExtendedTrustManager.checkServerTrusted(chain, AUTH_TYPE));
     }
 }
