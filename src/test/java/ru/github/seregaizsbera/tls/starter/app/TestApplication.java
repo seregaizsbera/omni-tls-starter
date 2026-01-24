@@ -2,11 +2,8 @@ package ru.github.seregaizsbera.tls.starter.app;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import ru.github.seregaizsbera.tls.starter.configuration.OmniTlsStarterSettings;
 
 @SpringBootApplication
-@EnableConfigurationProperties(OmniTlsStarterSettings.class)
 public class TestApplication {
     /**
      * Метод запуска главного класса (в действительности не вызывается)

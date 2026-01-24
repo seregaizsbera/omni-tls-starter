@@ -19,12 +19,12 @@ class OmniSecurityProviderTest {
     private static ProviderList providerList;
 
     @BeforeAll
-    public static void setUp(){
+    static void setUp(){
         providerList = Providers.getProviderList();
     }
 
     @AfterAll
-    public static void cleanUp(){
+    static void cleanUp(){
         Providers.setProviderList(providerList);
     }
 

@@ -48,6 +48,7 @@ final class OmniSecurityNotifierImpl implements Runnable, OmniSecurityNotifier {
         }
     }
 
+    @SuppressWarnings("resource")
     private void start() {
         ThreadFactory threadFactory = r -> {
             Thread thread = new Thread(r, OmniSecurityNotifierImpl.class.getSimpleName());
@@ -67,7 +68,7 @@ final class OmniSecurityNotifierImpl implements Runnable, OmniSecurityNotifier {
         return events.remainingCapacity() <= 0;
     }
 
-    @SuppressWarnings("CallToPrintStackTrace")
+    @SuppressWarnings({"CallToPrintStackTrace", "java:S4507"})
     @Override
     public void run() {
         try {

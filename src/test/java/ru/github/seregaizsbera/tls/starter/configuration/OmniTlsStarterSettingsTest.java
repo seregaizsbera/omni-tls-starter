@@ -2,22 +2,29 @@ package ru.github.seregaizsbera.tls.starter.configuration;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import ru.github.seregaizsbera.tls.starter.app.TestApplication;
 
 import org.slf4j.event.Level;
 
-import java.security.cert.CertificateParsingException;
+import java.security.cert.CertificateException;
 
 @ActiveProfiles(profiles = "test")
 @SpringBootTest(classes = TestApplication.class)
 class OmniTlsStarterSettingsTest {
+    private final OmniTlsStarterSettings omniTlsStarterSettings;
 
-    @Autowired
-    private OmniTlsStarterSettings omniTlsStarterSettings;
+    OmniTlsStarterSettingsTest(ApplicationContext context) {
+        this.omniTlsStarterSettings = context.getBeansOfType(OmniTlsStarterSettings.class)
+                .entrySet()
+                .stream()
+                .findFirst()
+                .orElseThrow()
+                .getValue();
+    }
 
     @Test
     void getInfoLevelTest() {
@@ -31,7 +38,7 @@ class OmniTlsStarterSettingsTest {
         omniTlsStarterSettings.setInfoLevelDays(100);
         Assertions.assertEquals(100, omniTlsStarterSettings.getInfoLevelDays());
         omniTlsStarterSettings.setMode(OmniTlsStarterSettings.Mode.STRICT);
-        Assertions.assertFalse(omniTlsStarterSettings.getMode().bypass(new CertificateParsingException()));
+        Assertions.assertFalse(omniTlsStarterSettings.getMode().bypass(new CertificateException()));
     }
 
     @Test

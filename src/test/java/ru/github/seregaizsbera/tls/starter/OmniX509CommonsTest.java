@@ -39,8 +39,8 @@ class OmniX509CommonsTest {
     private X500Principal principal;
 
     @BeforeEach
-    public void init() throws CertificateException {
-            principal = TestData.getInstance().realCert.getSubjectX500Principal();
+    void init() throws CertificateException {
+            principal = TestData.getInstance().cert().getSubjectX500Principal();
     }
     @Test
     @DisplayName("Проверка сертификата у которого срок использования ниже уровня INFO")
@@ -84,7 +84,7 @@ class OmniX509CommonsTest {
     @Test
     @SuppressWarnings("SpellCheckingInspection")
     void extractSAN() throws CertificateException {
-        var result = OmniX509Commons.extractSAN(TestData.getInstance().realCert);
+        var result = OmniX509Commons.extractSAN(TestData.getInstance().cert());
         Assertions.assertEquals(" (*.askubuntu.com,*.blogoverflow.com,*.mathoverflow.net...)", result);
     }
 }

@@ -1,19 +1,17 @@
 package ru.github.seregaizsbera.tls.starter.configuration;
 
 import org.slf4j.event.Level;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 
-@Configuration
-@ConfigurationProperties(prefix = "omni-tls.certificate")
 public class OmniTlsStarterSettings {
     private static OmniTlsStarterSettings instance = null;
 
-    @SuppressWarnings("java:S2696")
+    private OmniTlsStarterSettings() {
+        // hidden constructor
+    }
+
     public static OmniTlsStarterSettings getInstance() {
         if (instance == null) {
             instance = new OmniTlsStarterSettings();
@@ -28,12 +26,6 @@ public class OmniTlsStarterSettings {
     private long warningLevelDays = 30;
     private long errorLevelDays = 7;
     private Mode mode = Mode.STRICT;
-
-    @PostConstruct
-    @SuppressWarnings("java:S2696")
-    private void storeGlobally() {
-        instance = this;
-    }
 
     public long getInfoLevelDays() {
         return infoLevelDays;
@@ -102,7 +94,17 @@ public class OmniTlsStarterSettings {
         }
 
         public boolean bypass(CertificateException e) {
-            return whatToBypass.isInstance(e);
+            Throwable exception = e;
+            while (true) {
+                if (whatToBypass.isInstance(exception)) {
+                    return true;
+                }
+                Throwable next = exception.getCause();
+                if (next == null || next  == exception) {
+                    return false;
+                }
+                exception = next;
+            }
         }
     }
 }

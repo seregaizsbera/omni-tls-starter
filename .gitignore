@@ -1,35 +1,27 @@
-.DS_Store
-.gradle
-/build/
+!gradle/wrapper/gradle-wrapper.jar
+*.iml
+*.ipr
+*.iws
 */build/
 */out/
-!gradle/wrapper/gradle-wrapper.jar
-
-### STS ###
+.DS_Store
 .apt_generated
 .classpath
 .factorypath
+.gradle
+.idea
 .project
 .settings
 .springBeans
 .sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-/out/
-target/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
 /.nb-gradle/
-
+/.push-options
 /LOG_PATH_IS_UNDEFINED/
-
-### Release Notes ###
+/build/
+/dist/
+/nbbuild/
+/nbdist/
+/nbproject/private/
+/out/
 /public/
+target/

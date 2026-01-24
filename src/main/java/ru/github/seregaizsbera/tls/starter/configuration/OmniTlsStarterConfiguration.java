@@ -1,18 +1,28 @@
 package ru.github.seregaizsbera.tls.starter.configuration;
 
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import ru.github.seregaizsbera.tls.starter.OmniSecurityProvider;
-import ru.github.seregaizsbera.tls.starter.OmniTLSApplicationListener;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
+import ru.github.seregaizsbera.tls.starter.OmniTLSApplicationListener;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Configuration
-@EnableConfigurationProperties(OmniTlsStarterSettings.class)
 public class OmniTlsStarterConfiguration {
+
+    /**
+     * Создает экземпляр настроек.
+     * @return OmniTlsStarterSettings
+     */
+    @Bean
+    @ConfigurationProperties(prefix = "omni-tls.certificate")
+    public OmniTlsStarterSettings getSettings() {
+        return OmniTlsStarterSettings.getInstance();
+    }
 
     /**
      * Установка провайдера безопасности должна делаться, как можно раньше, поэтому

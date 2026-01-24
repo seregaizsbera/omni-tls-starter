@@ -8,11 +8,10 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.github.seregaizsbera.tls.starter.configuration.OmniTlsStarterSettings;
 import ru.github.seregaizsbera.tls.starter.models.OmniX509EventModel;
-import sun.security.x509.X500Name;
-import sun.security.x509.X509CertImpl;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.X509ExtendedKeyManager;
+import javax.security.auth.x500.X500Principal;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.security.KeyStoreException;
@@ -39,18 +38,18 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OmniX509ExtendedKeyManagerTest {
-    private static final X500Name[] X_500_NAME_ARRAY = new X500Name[1];
+    private static final X500Principal[] X_500_NAME_ARRAY = new X500Principal[1];
     private static final String KEY_TYPE = "keyType";
     private static final String ALIAS = "alias";
 
     @Mock
-    private X509CertImpl implCert;
+    private X509Certificate implCert;
     @Mock
     private X509ExtendedKeyManager keyManager;
     @Mock
     private OmniSecurityNotifier notifier;
     @Spy
-    private OmniTlsStarterSettings settings = new OmniTlsStarterSettings();
+    private OmniTlsStarterSettings settings = OmniTlsStarterSettings.getInstance();
     @InjectMocks
     private OmniX509ExtendedKeyManager manager;
 
@@ -83,7 +82,7 @@ class OmniX509ExtendedKeyManagerTest {
 
     @Test
     void getCertificateChain_full() {
-        when(keyManager.getCertificateChain(any())).thenReturn(new X509CertImpl[]{new X509CertImpl()});
+        when(keyManager.getCertificateChain(any())).thenReturn(new X509Certificate[]{implCert});
         when(notifier.isFull()).thenReturn(true);
 
         X509Certificate[] aliases = manager.getCertificateChain("alias");
@@ -94,9 +93,9 @@ class OmniX509ExtendedKeyManagerTest {
     @Test
     void getCertificateChain_notFull_and_alert() throws CertificateException {
         when(implCert.getNotAfter()).thenReturn(Date.from(Instant.now()));
-        when(implCert.getSubjectX500Principal()).thenReturn(TestData.getInstance().realCert.getSubjectX500Principal());
+        when(implCert.getSubjectX500Principal()).thenReturn(TestData.getInstance().cert().getSubjectX500Principal());
         when(implCert.getSerialNumber()).thenReturn(BigInteger.ZERO);
-        when(keyManager.getCertificateChain(any())).thenReturn(new X509CertImpl[]{implCert});
+        when(keyManager.getCertificateChain(any())).thenReturn(new X509Certificate[]{implCert});
         when(notifier.isFull()).thenReturn(false);
 
         X509Certificate[] aliases = manager.getCertificateChain(ALIAS);
@@ -109,7 +108,7 @@ class OmniX509ExtendedKeyManagerTest {
     void getCertificateChain_notFull_and_notAlert() {
         when(implCert.getNotAfter()).thenReturn(Date.from(Instant.now().plus(100L, ChronoUnit.DAYS)));
 
-        when(keyManager.getCertificateChain(any())).thenReturn(new X509CertImpl[]{implCert});
+        when(keyManager.getCertificateChain(any())).thenReturn(new X509Certificate[]{implCert});
         when(notifier.isFull()).thenReturn(false);
 
         X509Certificate[] aliases = manager.getCertificateChain(ALIAS);

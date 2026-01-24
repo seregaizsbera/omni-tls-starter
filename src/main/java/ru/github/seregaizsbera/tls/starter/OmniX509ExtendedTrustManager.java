@@ -22,13 +22,11 @@ class OmniX509ExtendedTrustManager extends X509ExtendedTrustManager {
     private final X509ExtendedTrustManager trustManager;
     private final OmniSecurityNotifier notifier;
     private final OmniTlsStarterSettings settings;
-    private final OmniTlsStarterSettings.Mode mode;
 
     private OmniX509ExtendedTrustManager(X509ExtendedTrustManager trustManager, OmniSecurityNotifier notifier, OmniTlsStarterSettings settings) {
         this.trustManager = trustManager;
         this.notifier = notifier;
         this.settings = settings;
-        this.mode = settings.getMode();
     }
 
     /**
@@ -97,11 +95,15 @@ class OmniX509ExtendedTrustManager extends X509ExtendedTrustManager {
     }
 
     private void throwOrNotify(CertificateException e, X509Certificate[] chain, Socket socket, SSLEngine engine) throws CertificateException {
-        if (mode.bypass(e)) {
+        if (settings.getMode().bypass(e)) {
             var connInfo = getConnectionInfo(socket, engine);
             var connPrefix = connInfo.isEmpty() ? "" : " ";
             var cert = chain[0];
-            notifier.notify(new OmniX509EventModel(Level.ERROR, e.getMessage() + " " + cert.getSubjectX500Principal().getName() + connPrefix + connInfo, cert.getSerialNumber().toString(16)));
+            Throwable exc = e;
+            while (exc.getCause() != null && exc.getCause() != exc) {
+                exc = exc.getCause();
+            }
+            notifier.notify(new OmniX509EventModel(Level.ERROR, exc.getMessage() + " " + cert.getSubjectX500Principal().getName() + connPrefix + connInfo, cert.getSerialNumber().toString(16)));
         } else {
             throw e;
         }
